@@ -1,6 +1,8 @@
-# 🦙📚 LlamaIndex - Chat with the Streamlit docs
+# Chat with Any Docs using LlamaIndex and Streamlit
 
-Build a chatbot powered by LlamaIndex that augments GPT 3.5 with the contents of the Streamlit docs (or your own data).
+Upload your own set of documents and chat with them using a model of your choice.
+
+It's a modified version of [StreamLit for LlamaIndex example](https://github.com/streamlit/llamaindex-chat-with-streamlit-docs) where you can actually upload your own files (PDF, TXT, DOCX, CSVs, etc.) and chat with them. The original version is using a hardcoded folder.
 
 ## Overview of the App
 
@@ -11,22 +13,53 @@ Build a chatbot powered by LlamaIndex that augments GPT 3.5 with the contents of
 
 ## Demo App
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://llamaindex-chat-with-docs.streamlit.app/)
+TBA
 
 ## Get an OpenAI API key
 
 You can get your own OpenAI API key by following the following instructions:
+
 1. Go to https://platform.openai.com/account/api-keys.
 2. Click on the `+ Create new secret key` button.
 3. Next, enter an identifier name (optional) and click on the `Create secret key` button.
-4. Add your API key to your `secrets.toml` file. If you don't already have a `secrets.toml` file, add a folder named `.streamlit`, create a file called `secrets.toml` within the folder, and add the following to it:
-``` openai_key = <your key here> ```
-   
-Alternatively, you can use [Streamlit Community Cloud's secrets management feature](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/secrets-management) to add your API key via the web interface.
+4. Add your API key to your `.streamlit/secrets.toml` file (rename the sample file after you add your key).
 
 > [!CAUTION]
-> Don't commit your secrets file to your GitHub repository. The `.gitignore` file in this repo includes `.streamlit/secrets.toml` and `secrets.toml`. 
+> Don't commit your secrets file to your GitHub repository. The `.gitignore` file in this repo includes `.streamlit/secrets.toml` and `secrets.toml`.
 
-## Try out the app
+## To launch the app
 
-Once the app is loaded, enter your question about the Streamlit library and wait for a response.
+1. Clone the repo in your Terminal (or using a service like Koyeb)
+
+```
+git clone git@github.com:streamlit/llamaindex-chat-with-streamlit-docs.git
+```
+
+2. Change to `llamaindex-chat-with-streamlit-docs` directory and install dependencies:
+
+```
+pip install -r requirements.txt
+```
+
+Before that, you might want to change to a new Python environment not to mess up your current one. For instance, if you're using Conda:
+
+```
+conda create -n streamlit
+conda activate streamlit
+```
+
+3. Once the dependencies are installed, run the app:
+
+```
+streamlit run streamlit_app.py
+```
+
+It will be available on
+
+```
+http://localhost:8501/
+```
+
+Once the app is loaded, use the folder on the left to load your own library, Reindex it, and after the indexing is done ask a question using the chat.
+
+Note, that if you're using OpenAI's GPT4o model (the default one), it may be quite expensive for big folders. So either reduce the number of folders or use another model.
