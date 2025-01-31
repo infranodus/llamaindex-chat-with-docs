@@ -1,8 +1,8 @@
-# Chat with Any Docs using LlamaIndex and Streamlit
+# Chat with Any Docs using LlamaIndex, Streamlit, and any LLM Model (including DeepSeek)
 
-Upload your own set of documents and chat with them using a model of your choice.
+Upload your own set of documents and chat with them using a model of your choice. You can use it with the open-source DeepSeek R1 model as well, just specify the details in the settings.
 
-It's a modified version of [StreamLit for LlamaIndex example](https://github.com/streamlit/llamaindex-chat-with-streamlit-docs) where you can actually upload your own files (PDF, TXT, DOCX, CSVs, etc.) and chat with them. The original version is using a hardcoded folder.
+This app is a modified version of [StreamLit for LlamaIndex example](https://github.com/streamlit/llamaindex-chat-with-streamlit-docs) where you can actually upload your own files (PDF, TXT, DOCX, CSVs, etc.) and chat with them. The original version is using a hardcoded folder. I also added a possibility to use open-source models here, not only GPT-4o.
 
 ## Overview of the App
 

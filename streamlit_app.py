@@ -1,7 +1,10 @@
 import streamlit as st
 import openai
 from llama_index.llms.openai import OpenAI
+from llama_index.llms.ollama import Ollama
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
+from llama_index.embeddings.ollama import OllamaEmbedding
+from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.readers.file import CSVReader
 import os
 from datetime import datetime
@@ -62,16 +65,40 @@ def load_data(folder_path):
     for file_name, count in file_counts.items():
         print(f"- {file_name}: {count} documents")
     
-    # Create the index with all documents
-    Settings.llm = OpenAI(
-        model="gpt-4",
-        temperature=0.2,
-        system_prompt="""You are an expert on 
-        the topic of interest and your 
-        job is to answer questions based on the content you have. 
-        Keep your answers precise and based on 
-        facts – do not hallucinate features.""",
-    )
+    # Configure the embedding model
+    if st.session_state.model_settings["model_type"] == "OpenAI":
+        Settings.embed_model = OpenAIEmbedding(
+            model=st.session_state.model_settings["embedding_model"],
+        )
+    else:
+        Settings.embed_model = OllamaEmbedding(
+            model_name=st.session_state.model_settings["embedding_model"],
+            base_url=st.session_state.model_settings["ollama_base_url"],
+        )
+
+    # Configure the LLM
+    if st.session_state.model_settings["model_type"] == "OpenAI":
+        Settings.llm = OpenAI(
+            model=st.session_state.model_settings["model"],
+            temperature=0.2,
+            system_prompt="""You are an expert on 
+            the topic of interest and your 
+            job is to answer questions based on the content you have. 
+            Keep your answers precise and based on 
+            facts – do not hallucinate features."""
+        )
+    else:
+        Settings.llm = Ollama(
+            model=st.session_state.model_settings["model"],
+            base_url=st.session_state.model_settings["ollama_base_url"],
+            temperature=0.2,
+            system_prompt="""You are an expert on 
+            the topic of interest and your 
+            job is to answer questions based on the content you have. 
+            Keep your answers precise and based on 
+            facts – do not hallucinate features."""
+        )
+    
     index = VectorStoreIndex.from_documents(all_files)
     return index
 
@@ -81,6 +108,48 @@ st.info("Select a data folder to analyze or upload new documents", icon="📃")
 # Sidebar for folder selection and file upload
 with st.sidebar:
     st.header("Data Management")
+    
+    # Model Selection Settings
+    st.header("Model Settings")
+    model_type = st.selectbox(
+        "Select Model Provider",
+        ["OpenAI", "Ollama"]
+    )
+    
+    if model_type == "OpenAI":
+        model = st.selectbox(
+            "Select OpenAI Model",
+            ["gpt-4o", "gpt-4o-mini"]
+        )
+        embedding_model = "text-embedding-ada-002"  # OpenAI's default embedding model
+        if not openai.api_key:
+            st.error("Please set your OpenAI API key in the secrets.toml file")
+    else:
+        ollama_base_url = st.text_input(
+            "Ollama Base URL",
+            value="http://localhost:11434",
+            help="The base URL where your Ollama instance is running"
+        )
+        model = st.text_input(
+            "Ollama Model",
+            value="deepseek-r1:8b",
+            help="The name of the Ollama model to use (e.g.,deepseek-r1:8b, llama3.2:3b, mistral:7b, etc.)"
+        )
+        embedding_model = st.text_input(
+            "Ollama Embedding Model",
+            value="nomic-embed-text",
+            help="The Ollama model to use for embeddings (e.g., nomic-embed-text)"
+        )
+    
+    # Store model settings in session state
+    if "model_settings" not in st.session_state:
+        st.session_state.model_settings = {}
+    st.session_state.model_settings.update({
+        "model_type": model_type,
+        "model": model,
+        "embedding_model": embedding_model,
+        "ollama_base_url": ollama_base_url if model_type == "Ollama" else None
+    })
     
     # Folder selection
     folders = get_data_folders()
