@@ -31,6 +31,19 @@ def load_data(folder_path):
     print(f"\n=== Loading documents from {folder_path} ===")
     print(f"Number of documents: {len(docs)}")
     
+    print("\n=== First 10 documents ===")
+    for i, doc in enumerate(docs[:10]):
+        print(f"\n[Document {i+1}]")
+        print(f"File name: {doc.metadata.get('file_name', 'N/A')}")
+        print(f"Content preview: {doc.text[:200]}...")
+    
+    if len(docs) > 10:
+        print("\n=== Last 10 documents ===")
+        for i, doc in enumerate(docs[-10:]):
+            print(f"\n[Document {len(docs)-9+i}]")
+            print(f"File name: {doc.metadata.get('file_name', 'N/A')}")
+            print(f"Content preview: {doc.text[:200]}...")
+    
     Settings.llm = OpenAI(
         model="gpt-4",
         temperature=0.2,
@@ -136,7 +149,7 @@ with st.sidebar:
     uploaded_files = st.file_uploader(
         "Choose files to upload",
         accept_multiple_files=True,
-        type=['txt', 'md', 'pdf', 'docx']
+        type=['txt', 'md', 'pdf', 'docx', 'csv']
     )
     
     if uploaded_files:
