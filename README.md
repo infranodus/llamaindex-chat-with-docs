@@ -22,7 +22,7 @@ You can get your own OpenAI API key by following the following instructions:
 1. Go to https://platform.openai.com/account/api-keys.
 2. Click on the `+ Create new secret key` button.
 3. Next, enter an identifier name (optional) and click on the `Create secret key` button.
-4. Add your API key to your `.streamlit/secrets.toml` file (rename the sample file after you add your key).
+4. Add your API key to your Environemnt variables as `OPENAI_KEY`. Alternatively, you can add this API key to your `.streamlit/secrets.toml` file (rename the sample file after you add your key).
 
 > [!CAUTION]
 > Don't commit your secrets file to your GitHub repository. The `.gitignore` file in this repo includes `.streamlit/secrets.toml` and `secrets.toml`.

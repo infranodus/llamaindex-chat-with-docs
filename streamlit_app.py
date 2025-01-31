@@ -10,7 +10,7 @@ import shutil
 from pathlib import Path
 
 st.set_page_config(page_title="Chat with any content", page_icon="🦙", layout="centered", initial_sidebar_state="auto", menu_items=None)
-openai.api_key = st.secrets.openai_key
+openai.api_key = os.getenv("OPENAI_KEY", st.secrets.openai_key)
 
 def get_data_folders():
     """Get all folders in the data directory"""
