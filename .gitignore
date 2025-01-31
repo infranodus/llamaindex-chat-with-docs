@@ -1,3 +1,4 @@
 secrets.toml
 .streamlit/secrets.toml
 .DS_Store
+data/*
