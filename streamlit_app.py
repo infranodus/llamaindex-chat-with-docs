@@ -2,10 +2,12 @@ import streamlit as st
 import openai
 from llama_index.llms.openai import OpenAI
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
+from llama_index.readers.file import CSVReader
 import os
 from datetime import datetime
 import uuid
 import shutil
+from pathlib import Path
 
 st.set_page_config(page_title="Chat with any content", page_icon="🦙", layout="centered", initial_sidebar_state="auto", menu_items=None)
 openai.api_key = st.secrets.openai_key
@@ -26,24 +28,41 @@ def get_folder_files(folder_path):
 @st.cache_resource(show_spinner=False)
 def load_data(folder_path):
     """Load and index data from a specific folder"""
-    reader = SimpleDirectoryReader(input_dir=folder_path, recursive=True)
-    docs = reader.load_data()
+    # First, get all files in the directory
+    all_files = []
+    for root, _, files in os.walk(folder_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            try:
+                if file.lower().endswith('.csv'):
+                    # Handle CSV files with the specialized reader
+                    csv_reader = CSVReader(concat_rows=False)
+                    with open(file_path, 'r') as f:
+                        docs = csv_reader.load_data(Path(file_path))
+                    all_files.extend(docs)
+                else:
+                    # Use SimpleDirectoryReader for non-CSV files
+                    reader = SimpleDirectoryReader(input_files=[file_path])
+                    docs = reader.load_data()
+                    all_files.extend(docs)
+            except Exception as e:
+                print(f"Error loading file {file_path}: {str(e)}")
+                continue
+    
     print(f"\n=== Loading documents from {folder_path} ===")
-    print(f"Number of documents: {len(docs)}")
     
-    print("\n=== First 10 documents ===")
-    for i, doc in enumerate(docs[:10]):
-        print(f"\n[Document {i+1}]")
-        print(f"File name: {doc.metadata.get('file_name', 'N/A')}")
-        print(f"Content preview: {doc.text[:200]}...")
+    # Calculate statistics
+    file_counts = {}
+    for doc in all_files:
+        file_name = doc.metadata.get('file_name', 'unknown')
+        file_counts[file_name] = file_counts.get(file_name, 0) + 1
     
-    if len(docs) > 10:
-        print("\n=== Last 10 documents ===")
-        for i, doc in enumerate(docs[-10:]):
-            print(f"\n[Document {len(docs)-9+i}]")
-            print(f"File name: {doc.metadata.get('file_name', 'N/A')}")
-            print(f"Content preview: {doc.text[:200]}...")
+    print(f"\nTotal number of documents created: {len(all_files)}")
+    print("\nDocuments per file:")
+    for file_name, count in file_counts.items():
+        print(f"- {file_name}: {count} documents")
     
+    # Create the index with all documents
     Settings.llm = OpenAI(
         model="gpt-4",
         temperature=0.2,
@@ -53,7 +72,8 @@ def load_data(folder_path):
         Keep your answers precise and based on 
         facts – do not hallucinate features.""",
     )
-    return VectorStoreIndex.from_documents(docs)
+    index = VectorStoreIndex.from_documents(all_files)
+    return index
 
 st.title("Chat with any content")
 st.info("Select a data folder to analyze or upload new documents", icon="📃")
